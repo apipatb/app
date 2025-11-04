@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const Customer = require('../models/Customer');
 const { deleteCache, deleteCachePattern, trackOrderStatus, getOrdersByStatus } = require('../utils/cache');
+const { publishNewOrder, publishOrderStatusChange } = require('../utils/notifications');
 
 // Get all orders
 const getAllOrders = async (req, res) => {
@@ -106,6 +107,14 @@ const createOrder = async (req, res) => {
       .populate('customer', 'name phone email')
       .populate('items.service', 'name price');
 
+    // Publish new order notification
+    await publishNewOrder({
+      orderId: order._id.toString(),
+      orderNumber: order.orderNumber,
+      customer: populatedOrder.customer.name,
+      totalAmount: order.totalAmount
+    });
+
     res.status(201).json({
       success: true,
       data: populatedOrder
@@ -122,6 +131,18 @@ const createOrder = async (req, res) => {
 const updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
+
+    // Get old order to track status change
+    const oldOrder = await Order.findById(req.params.id).populate('customer', 'name');
+    if (!oldOrder) {
+      return res.status(404).json({
+        success: false,
+        error: 'Order not found'
+      });
+    }
+
+    const oldStatus = oldOrder.status;
+
     const order = await Order.findByIdAndUpdate(
       req.params.id,
       {
@@ -131,15 +152,20 @@ const updateOrderStatus = async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    if (!order) {
-      return res.status(404).json({
-        success: false,
-        error: 'Order not found'
-      });
-    }
-
     // Track status change in Redis
     await trackOrderStatus(order._id.toString(), status);
+
+    // Publish status change notification
+    await publishOrderStatusChange({
+      orderId: order._id.toString(),
+      orderNumber: order.orderNumber,
+      oldStatus,
+      newStatus: status,
+      customer: oldOrder.customer.name
+    });
+
+    // Invalidate dashboard cache
+    await deleteCachePattern('dashboard:*');
 
     res.json({
       success: true,

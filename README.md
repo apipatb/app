@@ -1,13 +1,27 @@
-# Laundry Management System
+# Laundry Management System v2.0
 
 ระบบจัดการร้านซักรีด (Laundry Management System) สำหรับการเรียนรู้การใช้งาน **Redis** และ **MongoDB** ร่วมกัน
+
+## ✨ What's New in v2.0
+
+- 📝 **Input Validation** - Joi schemas สำหรับทุก endpoints
+- 🚦 **Rate Limiting** - ป้องกัน abuse ด้วย Redis
+- 📊 **Dashboard & Analytics** - รายงานแบบ real-time
+- 📡 **Redis Pub/Sub** - Real-time notifications
+- 🛡️ **Better Error Handling** - Consistent error responses
+- 📝 **Request Logging** - Winston logger
+- 🔄 **Graceful Shutdown** - Production-ready
+
+📖 **อ่านรายละเอียด:** [FEATURES.md](./FEATURES.md)
 
 ## 🎯 คุณสมบัติ
 
 - 📦 **MongoDB** - เก็บข้อมูลหลัก (Customers, Services, Orders)
-- ⚡ **Redis** - Caching และ Queue Management
-- 🚀 **Express.js** - RESTful API
+- ⚡ **Redis** - Caching, Queue, Pub/Sub, Rate Limiting
+- 🚀 **Express.js** - RESTful API with validation
 - 🐳 **Docker** - Container สำหรับ Development
+- 📊 **Dashboard** - Analytics & Reports
+- 🔒 **Security** - Rate limiting, Input validation, Helmet
 
 ## 🏗️ สถาปัตยกรรม
 

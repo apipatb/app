@@ -8,16 +8,19 @@ const {
   deleteCustomer,
   searchByPhone
 } = require('../controllers/customerController');
+const validate = require('../middleware/validate');
+const customerSchemas = require('../validators/customerValidator');
+const { strictLimiter } = require('../middleware/rateLimiter');
 
 router.route('/')
   .get(getAllCustomers)
-  .post(createCustomer);
+  .post(strictLimiter, validate(customerSchemas.create), createCustomer);
 
-router.get('/search', searchByPhone);
+router.get('/search', validate(customerSchemas.query, 'query'), searchByPhone);
 
 router.route('/:id')
   .get(getCustomerById)
-  .put(updateCustomer)
-  .delete(deleteCustomer);
+  .put(strictLimiter, validate(customerSchemas.update), updateCustomer)
+  .delete(strictLimiter, deleteCustomer);
 
 module.exports = router;

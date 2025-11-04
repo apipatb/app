@@ -10,19 +10,22 @@ const {
   deleteOrder,
   getOrdersInQueue
 } = require('../controllers/orderController');
+const validate = require('../middleware/validate');
+const orderSchemas = require('../validators/orderValidator');
+const { strictLimiter } = require('../middleware/rateLimiter');
 
 router.route('/')
-  .get(getAllOrders)
-  .post(createOrder);
+  .get(validate(orderSchemas.query, 'query'), getAllOrders)
+  .post(strictLimiter, validate(orderSchemas.create), createOrder);
 
 router.get('/number/:orderNumber', getOrderByNumber);
 router.get('/queue/:status', getOrdersInQueue);
 
 router.route('/:id')
   .get(getOrderById)
-  .put(updateOrder)
-  .delete(deleteOrder);
+  .put(strictLimiter, validate(orderSchemas.update), updateOrder)
+  .delete(strictLimiter, deleteOrder);
 
-router.patch('/:id/status', updateOrderStatus);
+router.patch('/:id/status', strictLimiter, validate(orderSchemas.updateStatus), updateOrderStatus);
 
 module.exports = router;
