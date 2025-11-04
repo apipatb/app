@@ -2,7 +2,10 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const compression = require('compression');
+const swaggerUi = require('swagger-ui-express');
 
+const { validateEnv } = require('./config/env');
 const connectDB = require('./config/database');
 const { connectRedis } = require('./config/redis');
 const { initPubSub, closePubSub } = require('./utils/notifications');
@@ -10,7 +13,13 @@ const { logger, requestLogger } = require('./utils/logger');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 const { apiLimiter } = require('./middleware/rateLimiter');
 const requestId = require('./middleware/requestId');
+const { performanceMonitor } = require('./middleware/performance');
 const { healthCheck, detailedHealthCheck, readinessCheck, livenessCheck } = require('./controllers/healthController');
+const { getMetrics } = require('./controllers/metricsController');
+const swaggerSpec = require('./config/swagger');
+
+// Validate environment variables on startup
+validateEnv();
 
 // Import routes
 const customerRoutes = require('./routes/customerRoutes');
@@ -23,23 +32,55 @@ const app = express();
 // Trust proxy (for Railway/Heroku/etc)
 app.set('trust proxy', 1);
 
-// Security & Basic Middleware
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Compression middleware (compress all responses)
+app.use(compression());
+
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: false // Disable for Swagger UI
+}));
+
+// CORS configuration
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID']
+}));
+
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Request ID middleware (for tracing)
 app.use(requestId);
 
+// Performance monitoring
+app.use(performanceMonitor);
+
 // Custom request logger
 app.use(requestLogger);
+
+// API Documentation (Swagger)
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Laundry API Docs'
+}));
+
+// Swagger JSON endpoint
+app.get('/api-docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
 
 // Health check endpoints (before rate limiting)
 app.get('/health', healthCheck);
 app.get('/health/detailed', detailedHealthCheck);
 app.get('/health/ready', readinessCheck);  // For Kubernetes readiness probe
 app.get('/health/live', livenessCheck);    // For Kubernetes liveness probe
+
+// Metrics endpoint (for monitoring)
+app.get('/metrics', getMetrics);
 
 // Apply rate limiting to all API routes
 app.use('/api', apiLimiter);
@@ -55,7 +96,8 @@ app.get('/', (req, res) => {
   res.json({
     success: true,
     message: 'Welcome to Laundry Management API',
-    version: '2.1.0',
+    version: '2.2.0',
+    environment: process.env.NODE_ENV || 'development',
     features: [
       'MongoDB & Redis Integration',
       'Real-time Notifications (Pub/Sub)',
@@ -66,14 +108,23 @@ app.get('/', (req, res) => {
       'Pagination & Sorting',
       'Advanced Search & Filtering',
       'Request ID Tracking',
-      'Health Checks (Kubernetes-ready)'
+      'Health Checks (Kubernetes-ready)',
+      'API Documentation (Swagger)',
+      'Performance Monitoring',
+      'Response Compression',
+      'Environment Validation'
     ],
     endpoints: {
-      health: {
-        basic: '/health',
+      documentation: {
+        swagger: '/api-docs',
+        openapi: '/api-docs.json'
+      },
+      monitoring: {
+        health: '/health',
         detailed: '/health/detailed',
         readiness: '/health/ready',
-        liveness: '/health/live'
+        liveness: '/health/live',
+        metrics: '/metrics'
       },
       api: {
         customers: '/api/customers',
@@ -82,10 +133,11 @@ app.get('/', (req, res) => {
         dashboard: '/api/dashboard'
       }
     },
-    documentation: {
+    quickStart: {
+      documentation: 'Visit /api-docs for interactive API documentation',
       pagination: 'Add ?page=1&limit=20&sort=-createdAt to list endpoints',
       search: 'Add &search=keyword to filter results',
-      examples: 'See api-examples.md for detailed usage'
+      monitoring: 'Check /metrics for performance data'
     }
   });
 });

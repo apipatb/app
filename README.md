@@ -1,27 +1,35 @@
-# Laundry Management System v2.0
+# Laundry Management System v2.2
 
 ระบบจัดการร้านซักรีด (Laundry Management System) สำหรับการเรียนรู้การใช้งาน **Redis** และ **MongoDB** ร่วมกัน
 
-## ✨ What's New in v2.0
+[![Version](https://img.shields.io/badge/version-2.2.0-blue.svg)](https://github.com/yourusername/laundry-api)
+[![Node](https://img.shields.io/badge/node-%3E%3D%2020.0.0-brightgreen.svg)](https://nodejs.org)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-- 📝 **Input Validation** - Joi schemas สำหรับทุก endpoints
-- 🚦 **Rate Limiting** - ป้องกัน abuse ด้วย Redis
-- 📊 **Dashboard & Analytics** - รายงานแบบ real-time
-- 📡 **Redis Pub/Sub** - Real-time notifications
-- 🛡️ **Better Error Handling** - Consistent error responses
-- 📝 **Request Logging** - Winston logger
-- 🔄 **Graceful Shutdown** - Production-ready
+## ✨ What's New in v2.2
 
-📖 **อ่านรายละเอียด:** [FEATURES.md](./FEATURES.md)
+- 📖 **Swagger API Docs** - Interactive API documentation ที่ `/api-docs`
+- 🗜️ **Response Compression** - gzip compression (ลด 60-80% response size)
+- 📊 **Performance Monitoring** - Track response times ทุก endpoint
+- ✅ **Environment Validation** - Validate config ตอน startup
+- 🌐 **Enhanced CORS** - Better CORS configuration
+- 🔐 **Security Improvements** - Helmet + request limits
 
-## 🎯 คุณสมบัติ
+📖 **Version History:**
+- [v2.2 Features](./V2.2_FEATURES.md) - Swagger, Compression, Monitoring
+- [v2.1 Features](./V2.1_FEATURES.md) - Pagination, Health checks
+- [v2.0 Features](./FEATURES.md) - Validation, Rate limiting, Dashboard
+
+## 🎯 คุณสมบัติเด่น
 
 - 📦 **MongoDB** - เก็บข้อมูลหลัก (Customers, Services, Orders)
-- ⚡ **Redis** - Caching, Queue, Pub/Sub, Rate Limiting
+- ⚡ **Redis** - Caching, Queue, Pub/Sub, Rate Limiting, Performance tracking
 - 🚀 **Express.js** - RESTful API with validation
+- 📖 **Swagger UI** - Interactive API documentation
 - 🐳 **Docker** - Container สำหรับ Development
-- 📊 **Dashboard** - Analytics & Reports
-- 🔒 **Security** - Rate limiting, Input validation, Helmet
+- 📊 **Dashboard** - Analytics & Reports with Aggregation
+- 📈 **Monitoring** - Performance metrics & Health checks
+- 🔒 **Security** - Rate limiting, Input validation, Helmet, CORS
 
 ## 🏗️ สถาปัตยกรรม
 
