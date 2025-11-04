@@ -50,6 +50,7 @@ const requestLogger = (req, res, next) => {
   res.on('finish', () => {
     const duration = Date.now() - start;
     const logData = {
+      requestId: req.id || 'unknown',
       method: req.method,
       url: req.originalUrl,
       status: res.statusCode,

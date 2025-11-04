@@ -1,27 +1,40 @@
 const Customer = require('../models/Customer');
 const { getOrSetCache, deleteCache, deleteCachePattern } = require('../utils/cache');
+const { parsePagination, parseSort, paginate } = require('../utils/pagination');
+const response = require('../utils/response');
 
-// Get all customers (with caching)
+// Get all customers (with pagination, sorting, filtering)
 const getAllCustomers = async (req, res) => {
   try {
-    const customers = await getOrSetCache(
-      'customers:all',
+    const { page, limit, skip } = parsePagination(req.query);
+    const sort = parseSort(req.query.sort);
+    const { search } = req.query;
+
+    // Build filter
+    const filter = {};
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { phone: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Create cache key based on query params
+    const cacheKey = `customers:${page}:${limit}:${JSON.stringify(sort)}:${search || 'all'}`;
+
+    const result = await getOrSetCache(
+      cacheKey,
       async () => {
-        return await Customer.find().sort({ createdAt: -1 }).lean();
+        const query = Customer.find(filter);
+        return await paginate(query, { page, limit, skip, sort });
       },
-      1800 // 30 minutes
+      600 // 10 minutes (shorter cache for paginated results)
     );
 
-    res.json({
-      success: true,
-      count: customers.length,
-      data: customers
-    });
+    return response.successWithPagination(res, result.data, result.pagination);
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
+    return response.serverError(res, error.message);
   }
 };
 
@@ -37,21 +50,12 @@ const getCustomerById = async (req, res) => {
     );
 
     if (!customer) {
-      return res.status(404).json({
-        success: false,
-        error: 'Customer not found'
-      });
+      return response.notFound(res, 'Customer not found');
     }
 
-    res.json({
-      success: true,
-      data: customer
-    });
+    return response.success(res, customer);
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
+    return response.serverError(res, error.message);
   }
 };
 
@@ -63,15 +67,9 @@ const createCustomer = async (req, res) => {
     // Invalidate cache
     await deleteCachePattern('customers:*');
 
-    res.status(201).json({
-      success: true,
-      data: customer
-    });
+    return response.created(res, customer, 'Customer created successfully');
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      error: error.message
-    });
+    return response.badRequest(res, error.message);
   }
 };
 
@@ -85,25 +83,16 @@ const updateCustomer = async (req, res) => {
     );
 
     if (!customer) {
-      return res.status(404).json({
-        success: false,
-        error: 'Customer not found'
-      });
+      return response.notFound(res, 'Customer not found');
     }
 
     // Invalidate cache
     await deleteCache(`customer:${req.params.id}`);
     await deleteCachePattern('customers:*');
 
-    res.json({
-      success: true,
-      data: customer
-    });
+    return response.success(res, customer, 'Customer updated successfully');
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      error: error.message
-    });
+    return response.badRequest(res, error.message);
   }
 };
 
@@ -113,25 +102,16 @@ const deleteCustomer = async (req, res) => {
     const customer = await Customer.findByIdAndDelete(req.params.id);
 
     if (!customer) {
-      return res.status(404).json({
-        success: false,
-        error: 'Customer not found'
-      });
+      return response.notFound(res, 'Customer not found');
     }
 
     // Invalidate cache
     await deleteCache(`customer:${req.params.id}`);
     await deleteCachePattern('customers:*');
 
-    res.json({
-      success: true,
-      data: {}
-    });
+    return response.success(res, null, 'Customer deleted successfully');
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
+    return response.serverError(res, error.message);
   }
 };
 
@@ -142,21 +122,12 @@ const searchByPhone = async (req, res) => {
     const customer = await Customer.findOne({ phone });
 
     if (!customer) {
-      return res.status(404).json({
-        success: false,
-        error: 'Customer not found'
-      });
+      return response.notFound(res, 'Customer not found');
     }
 
-    res.json({
-      success: true,
-      data: customer
-    });
+    return response.success(res, customer);
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
+    return response.serverError(res, error.message);
   }
 };
 

@@ -9,6 +9,8 @@ const { initPubSub, closePubSub } = require('./utils/notifications');
 const { logger, requestLogger } = require('./utils/logger');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 const { apiLimiter } = require('./middleware/rateLimiter');
+const requestId = require('./middleware/requestId');
+const { healthCheck, detailedHealthCheck, readinessCheck, livenessCheck } = require('./controllers/healthController');
 
 // Import routes
 const customerRoutes = require('./routes/customerRoutes');
@@ -27,17 +29,17 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Request ID middleware (for tracing)
+app.use(requestId);
+
 // Custom request logger
 app.use(requestLogger);
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Laundry Management API is running!',
-    timestamp: new Date().toISOString()
-  });
-});
+// Health check endpoints (before rate limiting)
+app.get('/health', healthCheck);
+app.get('/health/detailed', detailedHealthCheck);
+app.get('/health/ready', readinessCheck);  // For Kubernetes readiness probe
+app.get('/health/live', livenessCheck);    // For Kubernetes liveness probe
 
 // Apply rate limiting to all API routes
 app.use('/api', apiLimiter);
@@ -53,21 +55,37 @@ app.get('/', (req, res) => {
   res.json({
     success: true,
     message: 'Welcome to Laundry Management API',
-    version: '2.0.0',
+    version: '2.1.0',
     features: [
       'MongoDB & Redis Integration',
       'Real-time Notifications (Pub/Sub)',
       'Advanced Caching',
       'Rate Limiting',
       'Input Validation',
-      'Dashboard Analytics'
+      'Dashboard Analytics',
+      'Pagination & Sorting',
+      'Advanced Search & Filtering',
+      'Request ID Tracking',
+      'Health Checks (Kubernetes-ready)'
     ],
     endpoints: {
-      customers: '/api/customers',
-      services: '/api/services',
-      orders: '/api/orders',
-      dashboard: '/api/dashboard',
-      health: '/health'
+      health: {
+        basic: '/health',
+        detailed: '/health/detailed',
+        readiness: '/health/ready',
+        liveness: '/health/live'
+      },
+      api: {
+        customers: '/api/customers',
+        services: '/api/services',
+        orders: '/api/orders',
+        dashboard: '/api/dashboard'
+      }
+    },
+    documentation: {
+      pagination: 'Add ?page=1&limit=20&sort=-createdAt to list endpoints',
+      search: 'Add &search=keyword to filter results',
+      examples: 'See api-examples.md for detailed usage'
     }
   });
 });
