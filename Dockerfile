@@ -2,12 +2,17 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Copy package files
 COPY package*.json ./
 
-RUN npm install
+# Install production dependencies
+RUN npm ci --only=production
 
+# Copy source code
 COPY . .
 
+# Expose port (Railway will use PORT env variable)
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+# Start the application
+CMD ["npm", "start"]

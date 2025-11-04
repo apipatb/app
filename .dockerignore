@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log
+.env
+.git
+.gitignore
+README.md
+RAILWAY_DEPLOY.md
+api-examples.md
+docker-compose.yml
+.DS_Store
+*.md

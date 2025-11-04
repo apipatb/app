@@ -344,12 +344,38 @@ LRANGE queue:orders:pending 0 -1     # ดู pending orders
 LLEN queue:orders:processing         # จำนวน processing orders
 ```
 
+## 🚀 Deployment บน Production
+
+### Deploy บน Railway (แนะนำ)
+
+Railway รองรับ Docker และมี MongoDB + Redis built-in ฟรี!
+
+```bash
+# 1. สมัครที่ railway.app
+# 2. เชื่อม GitHub repository
+# 3. สร้าง 3 services:
+#    - App (จาก repo นี้)
+#    - MongoDB (จาก template)
+#    - Redis (จาก template)
+# 4. Deploy อัตโนมัติ!
+```
+
+📖 **คู่มือเต็ม:** [RAILWAY_DEPLOY.md](./RAILWAY_DEPLOY.md)
+
+**ข้อดี:**
+- ✅ ฟรี $5/เดือน
+- ✅ รองรับ Docker
+- ✅ MongoDB + Redis managed
+- ✅ Auto-deployment จาก GitHub
+- ✅ ได้ public URL ทันที
+
 ## 📚 เอกสารเพิ่มเติม
 
 - [MongoDB Documentation](https://docs.mongodb.com/)
 - [Redis Documentation](https://redis.io/documentation)
 - [Mongoose Guide](https://mongoosejs.com/docs/guide.html)
 - [Node Redis](https://github.com/redis/node-redis)
+- [Railway Deployment Guide](./RAILWAY_DEPLOY.md) 🚂
 
 ## 🤝 Contributing
 
