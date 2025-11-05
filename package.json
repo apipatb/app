@@ -1,7 +1,7 @@
 {
   "name": "laundry-management-app",
-  "version": "1.0.0",
-  "description": "Laundry Management System with Redis and MongoDB - Learning Project",
+  "version": "2.3.0",
+  "description": "Laundry Management System with JWT Auth, WebSocket, Redis and MongoDB - Learning Project",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
@@ -27,7 +27,12 @@
     "swagger-ui-express": "^5.0.0",
     "swagger-jsdoc": "^6.2.8",
     "compression": "^1.7.4",
-    "response-time": "^2.3.2"
+    "response-time": "^2.3.2",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "socket.io": "^4.7.2",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-validator": "^7.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

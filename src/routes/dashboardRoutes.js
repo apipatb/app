@@ -8,8 +8,12 @@ const {
   getPopularServices,
   getRecentOrders
 } = require('../controllers/dashboardController');
+const { authenticate, authorize } = require('../middleware/auth');
 
-// Dashboard routes
+// Dashboard routes (protected - staff and admin only)
+router.use(authenticate);
+router.use(authorize('staff', 'admin'));
+
 router.get('/overview', getOverview);
 router.get('/revenue', getRevenueStats);
 router.get('/orders/by-status', getOrderStatsByStatus);

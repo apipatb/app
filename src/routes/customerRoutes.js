@@ -11,16 +11,17 @@ const {
 const validate = require('../middleware/validate');
 const customerSchemas = require('../validators/customerValidator');
 const { strictLimiter } = require('../middleware/rateLimiter');
+const { authenticate, authorize } = require('../middleware/auth');
 
 router.route('/')
-  .get(getAllCustomers)
-  .post(strictLimiter, validate(customerSchemas.create), createCustomer);
+  .get(authenticate, getAllCustomers)
+  .post(authenticate, strictLimiter, validate(customerSchemas.create), createCustomer);
 
-router.get('/search', validate(customerSchemas.query, 'query'), searchByPhone);
+router.get('/search', authenticate, validate(customerSchemas.query, 'query'), searchByPhone);
 
 router.route('/:id')
-  .get(getCustomerById)
-  .put(strictLimiter, validate(customerSchemas.update), updateCustomer)
-  .delete(strictLimiter, deleteCustomer);
+  .get(authenticate, getCustomerById)
+  .put(authenticate, authorize('staff', 'admin'), strictLimiter, validate(customerSchemas.update), updateCustomer)
+  .delete(authenticate, authorize('admin'), strictLimiter, deleteCustomer);
 
 module.exports = router;

@@ -5,8 +5,8 @@ const options = {
     openapi: '3.0.0',
     info: {
       title: 'Laundry Management API',
-      version: '2.1.0',
-      description: 'A comprehensive laundry management system API with Redis and MongoDB integration',
+      version: '2.3.0',
+      description: 'A comprehensive laundry management system API with JWT authentication, Redis caching, and MongoDB integration',
       contact: {
         name: 'API Support',
         email: 'support@laundry-api.com'
@@ -27,6 +27,10 @@ const options = {
       }
     ],
     tags: [
+      {
+        name: 'Authentication',
+        description: 'User authentication and authorization'
+      },
       {
         name: 'Health',
         description: 'Health check endpoints'
@@ -49,6 +53,14 @@ const options = {
       }
     ],
     components: {
+      securitySchemes: {
+        BearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Enter your JWT token in the format: Bearer {token}'
+        }
+      },
       schemas: {
         Customer: {
           type: 'object',

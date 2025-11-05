@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
@@ -8,6 +9,7 @@ const swaggerUi = require('swagger-ui-express');
 const { validateEnv } = require('./config/env');
 const connectDB = require('./config/database');
 const { connectRedis } = require('./config/redis');
+const { initSocket, closeSocket } = require('./config/socket');
 const { initPubSub, closePubSub } = require('./utils/notifications');
 const { logger, requestLogger } = require('./utils/logger');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
@@ -22,6 +24,7 @@ const swaggerSpec = require('./config/swagger');
 validateEnv();
 
 // Import routes
+const authRoutes = require('./routes/authRoutes');
 const customerRoutes = require('./routes/customerRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
 const orderRoutes = require('./routes/orderRoutes');
@@ -86,6 +89,7 @@ app.get('/metrics', getMetrics);
 app.use('/api', apiLimiter);
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/orders', orderRoutes);
@@ -96,9 +100,11 @@ app.get('/', (req, res) => {
   res.json({
     success: true,
     message: 'Welcome to Laundry Management API',
-    version: '2.2.0',
+    version: '2.3.0',
     environment: process.env.NODE_ENV || 'development',
     features: [
+      'JWT Authentication (Access & Refresh Tokens)',
+      'Role-Based Access Control (RBAC)',
       'MongoDB & Redis Integration',
       'Real-time Notifications (Pub/Sub)',
       'Advanced Caching',
@@ -127,6 +133,7 @@ app.get('/', (req, res) => {
         metrics: '/metrics'
       },
       api: {
+        auth: '/api/auth',
         customers: '/api/customers',
         services: '/api/services',
         orders: '/api/orders',
@@ -134,6 +141,7 @@ app.get('/', (req, res) => {
       }
     },
     quickStart: {
+      authentication: 'Register at /api/auth/register and login at /api/auth/login',
       documentation: 'Visit /api-docs for interactive API documentation',
       pagination: 'Add ?page=1&limit=20&sort=-createdAt to list endpoints',
       search: 'Add &search=keyword to filter results',
@@ -162,11 +170,18 @@ const startServer = async () => {
     // Initialize Pub/Sub
     await initPubSub();
 
-    // Start Express server
-    const server = app.listen(PORT, () => {
+    // Create HTTP server
+    const httpServer = http.createServer(app);
+
+    // Initialize Socket.io
+    initSocket(httpServer);
+
+    // Start HTTP server
+    const server = httpServer.listen(PORT, () => {
       logger.info(`🚀 Server is running on port ${PORT}`);
       logger.info(`📍 API available at http://localhost:${PORT}`);
       logger.info(`📊 Dashboard: http://localhost:${PORT}/api/dashboard`);
+      logger.info(`🔌 WebSocket server ready`);
       logger.info(`💚 Health check: http://localhost:${PORT}/health`);
     });
 
@@ -178,6 +193,10 @@ const startServer = async () => {
         logger.info('HTTP server closed');
 
         try {
+          // Close Socket.io
+          closeSocket();
+          logger.info('Socket.io server closed');
+
           // Close Pub/Sub connections
           await closePubSub();
           logger.info('Pub/Sub connections closed');

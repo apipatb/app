@@ -37,7 +37,20 @@ const envSchema = Joi.object({
 
   LOG_LEVEL: Joi.string()
     .valid('error', 'warn', 'info', 'debug')
-    .default('info')
+    .default('info'),
+
+  JWT_SECRET: Joi.string()
+    .min(32)
+    .default('your-super-secret-jwt-key-change-this-in-production-min-32-chars')
+    .description('JWT secret key (min 32 characters)'),
+
+  JWT_ACCESS_EXPIRY: Joi.string()
+    .default('15m')
+    .description('JWT access token expiry time'),
+
+  JWT_REFRESH_EXPIRY: Joi.string()
+    .default('7d')
+    .description('JWT refresh token expiry time')
 }).unknown(true); // Allow other environment variables
 
 /**
@@ -91,6 +104,11 @@ const getConfig = () => {
     },
     logging: {
       level: env.LOG_LEVEL
+    },
+    jwt: {
+      secret: env.JWT_SECRET,
+      accessExpiry: env.JWT_ACCESS_EXPIRY,
+      refreshExpiry: env.JWT_REFRESH_EXPIRY
     },
     isDevelopment: env.NODE_ENV === 'development',
     isProduction: env.NODE_ENV === 'production',

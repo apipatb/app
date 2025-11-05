@@ -2,6 +2,7 @@ const Order = require('../models/Order');
 const Customer = require('../models/Customer');
 const { deleteCache, deleteCachePattern, trackOrderStatus, getOrdersByStatus } = require('../utils/cache');
 const { publishNewOrder, publishOrderStatusChange } = require('../utils/notifications');
+const { emitOrderUpdate, emitDashboardUpdate } = require('../config/socket');
 
 // Get all orders
 const getAllOrders = async (req, res) => {
@@ -115,6 +116,19 @@ const createOrder = async (req, res) => {
       totalAmount: order.totalAmount
     });
 
+    // Emit real-time update via Socket.io
+    emitOrderUpdate(order.orderNumber, {
+      type: 'order-created',
+      status: order.status,
+      totalAmount: order.totalAmount
+    });
+
+    emitDashboardUpdate({
+      type: 'new-order',
+      orderNumber: order.orderNumber,
+      totalAmount: order.totalAmount
+    });
+
     res.status(201).json({
       success: true,
       data: populatedOrder
@@ -162,6 +176,21 @@ const updateOrderStatus = async (req, res) => {
       oldStatus,
       newStatus: status,
       customer: oldOrder.customer.name
+    });
+
+    // Emit real-time update via Socket.io
+    emitOrderUpdate(order.orderNumber, {
+      type: 'status-changed',
+      oldStatus,
+      newStatus: status,
+      completedDate: order.completedDate
+    });
+
+    emitDashboardUpdate({
+      type: 'order-status-changed',
+      orderNumber: order.orderNumber,
+      oldStatus,
+      newStatus: status
     });
 
     // Invalidate dashboard cache

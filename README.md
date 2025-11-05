@@ -1,35 +1,38 @@
-# Laundry Management System v2.2
+# Laundry Management System v2.3
 
-ระบบจัดการร้านซักรีด (Laundry Management System) สำหรับการเรียนรู้การใช้งาน **Redis** และ **MongoDB** ร่วมกัน
+ระบบจัดการร้านซักรีด (Laundry Management System) สำหรับการเรียนรู้การใช้งาน **JWT Authentication**, **WebSocket**, **Redis** และ **MongoDB** ร่วมกัน
 
-[![Version](https://img.shields.io/badge/version-2.2.0-blue.svg)](https://github.com/yourusername/laundry-api)
+[![Version](https://img.shields.io/badge/version-2.3.0-blue.svg)](https://github.com/yourusername/laundry-api)
 [![Node](https://img.shields.io/badge/node-%3E%3D%2020.0.0-brightgreen.svg)](https://nodejs.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-## ✨ What's New in v2.2
+## ✨ What's New in v2.3
 
-- 📖 **Swagger API Docs** - Interactive API documentation ที่ `/api-docs`
-- 🗜️ **Response Compression** - gzip compression (ลด 60-80% response size)
-- 📊 **Performance Monitoring** - Track response times ทุก endpoint
-- ✅ **Environment Validation** - Validate config ตอน startup
-- 🌐 **Enhanced CORS** - Better CORS configuration
-- 🔐 **Security Improvements** - Helmet + request limits
+- 🔐 **JWT Authentication** - Complete auth system with access & refresh tokens
+- 👥 **Role-Based Access Control** - User, Staff, Admin roles
+- 🔌 **WebSocket (Socket.io)** - Real-time order tracking & dashboard updates
+- 🔒 **Enhanced Security** - Password hashing, token blacklisting, input sanitization
+- 🛡️ **Protected Routes** - Authentication & authorization middleware
 
 📖 **Version History:**
+- [v2.3 Features](./V2.3_FEATURES.md) - JWT Auth, WebSocket, RBAC
 - [v2.2 Features](./V2.2_FEATURES.md) - Swagger, Compression, Monitoring
 - [v2.1 Features](./V2.1_FEATURES.md) - Pagination, Health checks
 - [v2.0 Features](./FEATURES.md) - Validation, Rate limiting, Dashboard
 
 ## 🎯 คุณสมบัติเด่น
 
-- 📦 **MongoDB** - เก็บข้อมูลหลัก (Customers, Services, Orders)
-- ⚡ **Redis** - Caching, Queue, Pub/Sub, Rate Limiting, Performance tracking
+- 🔐 **JWT Authentication** - Access & Refresh tokens with Redis storage
+- 👥 **RBAC** - Role-Based Access Control (User, Staff, Admin)
+- 🔌 **WebSocket** - Real-time updates with Socket.io
+- 📦 **MongoDB** - เก็บข้อมูลหลัก (Users, Customers, Services, Orders)
+- ⚡ **Redis** - Caching, Queue, Pub/Sub, Rate Limiting, Performance tracking, Token storage
 - 🚀 **Express.js** - RESTful API with validation
 - 📖 **Swagger UI** - Interactive API documentation
 - 🐳 **Docker** - Container สำหรับ Development
-- 📊 **Dashboard** - Analytics & Reports with Aggregation
+- 📊 **Dashboard** - Analytics & Reports with Aggregation (Protected)
 - 📈 **Monitoring** - Performance metrics & Health checks
-- 🔒 **Security** - Rate limiting, Input validation, Helmet, CORS
+- 🔒 **Security** - Password hashing, Token blacklisting, Rate limiting, Input sanitization, Helmet, CORS
 
 ## 🏗️ สถาปัตยกรรม
 
