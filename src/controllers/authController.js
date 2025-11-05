@@ -9,6 +9,7 @@ const {
 } = require('../utils/jwt');
 const { logger } = require('../utils/logger');
 const response = require('../utils/response');
+const { sendWelcomeEmail } = require('../utils/emailService');
 
 /**
  * Register new user
@@ -42,6 +43,9 @@ const register = async (req, res) => {
     // Update user with refresh token
     user.refreshToken = tokens.refreshToken;
     await user.save();
+
+    // Send welcome email
+    await sendWelcomeEmail(user.toSafeObject());
 
     logger.info(`New user registered: ${user.email}`);
 

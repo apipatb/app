@@ -9,6 +9,7 @@ const swaggerUi = require('swagger-ui-express');
 const { validateEnv } = require('./config/env');
 const connectDB = require('./config/database');
 const { connectRedis } = require('./config/redis');
+const { createTransporter } = require('./config/email');
 const { initSocket, closeSocket } = require('./config/socket');
 const { initPubSub, closePubSub } = require('./utils/notifications');
 const { logger, requestLogger } = require('./utils/logger');
@@ -169,6 +170,9 @@ const startServer = async () => {
 
     // Initialize Pub/Sub
     await initPubSub();
+
+    // Initialize email transporter
+    await createTransporter();
 
     // Create HTTP server
     const httpServer = http.createServer(app);

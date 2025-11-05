@@ -50,7 +50,47 @@ const envSchema = Joi.object({
 
   JWT_REFRESH_EXPIRY: Joi.string()
     .default('7d')
-    .description('JWT refresh token expiry time')
+    .description('JWT refresh token expiry time'),
+
+  // Email configuration (optional)
+  SMTP_HOST: Joi.string()
+    .description('SMTP server host'),
+
+  SMTP_PORT: Joi.number()
+    .integer()
+    .min(1)
+    .max(65535)
+    .default(587)
+    .description('SMTP server port'),
+
+  SMTP_SECURE: Joi.string()
+    .valid('true', 'false')
+    .default('false')
+    .description('Use SSL/TLS for SMTP'),
+
+  SMTP_USER: Joi.string()
+    .description('SMTP username'),
+
+  SMTP_PASS: Joi.string()
+    .description('SMTP password'),
+
+  GMAIL_USER: Joi.string()
+    .description('Gmail username'),
+
+  GMAIL_PASS: Joi.string()
+    .description('Gmail app password'),
+
+  EMAIL_FROM_NAME: Joi.string()
+    .default('Laundry Management System')
+    .description('Email sender name'),
+
+  EMAIL_FROM_ADDRESS: Joi.string()
+    .default('noreply@laundry.com')
+    .description('Email sender address'),
+
+  EMAIL_REPLY_TO: Joi.string()
+    .default('support@laundry.com')
+    .description('Reply-to email address')
 }).unknown(true); // Allow other environment variables
 
 /**

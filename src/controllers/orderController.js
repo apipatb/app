@@ -3,6 +3,7 @@ const Customer = require('../models/Customer');
 const { deleteCache, deleteCachePattern, trackOrderStatus, getOrdersByStatus } = require('../utils/cache');
 const { publishNewOrder, publishOrderStatusChange } = require('../utils/notifications');
 const { emitOrderUpdate, emitDashboardUpdate } = require('../config/socket');
+const { sendOrderConfirmation, sendOrderStatusUpdate } = require('../utils/emailService');
 
 // Get all orders
 const getAllOrders = async (req, res) => {
@@ -129,6 +130,11 @@ const createOrder = async (req, res) => {
       totalAmount: order.totalAmount
     });
 
+    // Send order confirmation email
+    if (populatedOrder.customer.email) {
+      await sendOrderConfirmation(populatedOrder, populatedOrder.customer);
+    }
+
     res.status(201).json({
       success: true,
       data: populatedOrder
@@ -147,7 +153,7 @@ const updateOrderStatus = async (req, res) => {
     const { status } = req.body;
 
     // Get old order to track status change
-    const oldOrder = await Order.findById(req.params.id).populate('customer', 'name');
+    const oldOrder = await Order.findById(req.params.id).populate('customer', 'name email');
     if (!oldOrder) {
       return res.status(404).json({
         success: false,
@@ -195,6 +201,11 @@ const updateOrderStatus = async (req, res) => {
 
     // Invalidate dashboard cache
     await deleteCachePattern('dashboard:*');
+
+    // Send status update email
+    if (oldOrder.customer.email) {
+      await sendOrderStatusUpdate(order, oldOrder.customer, oldStatus, status);
+    }
 
     res.json({
       success: true,
